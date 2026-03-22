@@ -1,634 +1,305 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Transitive Subgroups of S₇ — Galois Lattice</title>
+  <title>AIMS-7 Galois Groups</title>
   <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet"/>
-  <script>
-    MathJax = { tex: { inlineMath: [['$','$'],['\\(','\\)']] } };
-  </script>
+  <script>MathJax={tex:{inlineMath:[['$','$'],['\\(','\\)']]}}</script>
   <script async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
   <style>
-    :root {
-      --bg:        #0d0f14;
-      --surface:   #13161e;
-      --border:    #2a2f3d;
-      --gold:      #c9a84c;
-      --gold-dim:  #7a6230;
-      --teal:      #4ecdc4;
-      --red:       #e05c5c;
-      --text:      #e8e2d4;
-      --muted:     #6e7280;
-      --panel-bg:  #181c27;
-    }
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
-      background: var(--bg);
-      color: var(--text);
-      font-family: 'EB Garamond', Georgia, serif;
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
-
-    /* ── HEADER ── */
-    header {
-      width: 100%;
-      text-align: center;
-      padding: 3rem 2rem 1.5rem;
-      border-bottom: 1px solid var(--border);
-      background: linear-gradient(180deg, #0a0c11 0%, transparent 100%);
-    }
-    header h1 {
-      font-size: clamp(1.6rem, 4vw, 2.8rem);
-      font-weight: 600;
-      letter-spacing: 0.02em;
-      color: var(--gold);
-      margin-bottom: 0.4rem;
-    }
-    header p {
-      font-size: 1.05rem;
-      font-style: italic;
-      color: var(--muted);
-    }
-    .author-badge {
-      display: inline-block;
-      margin-top: 0.8rem;
-      padding: 0.25rem 0.9rem;
-      border: 1px solid var(--gold-dim);
-      border-radius: 2px;
-      font-size: 0.78rem;
-      font-family: 'JetBrains Mono', monospace;
-      color: var(--gold-dim);
-      letter-spacing: 0.08em;
-    }
-
-    /* ── MAIN LAYOUT ── */
-    .layout {
-      display: flex;
-      gap: 2rem;
-      padding: 2.5rem 2rem;
-      width: 100%;
-      max-width: 1200px;
-      align-items: flex-start;
-    }
-
-    /* ── LATTICE SVG ── */
-    .lattice-wrap {
-      flex: 1 1 520px;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 4px;
-      padding: 1.5rem;
-      position: relative;
-    }
-    .lattice-wrap h2 {
-      font-size: 0.78rem;
-      font-family: 'JetBrains Mono', monospace;
-      letter-spacing: 0.12em;
-      color: var(--muted);
-      text-transform: uppercase;
-      margin-bottom: 1.2rem;
-    }
-    svg#lattice {
-      width: 100%;
-      height: auto;
-      overflow: visible;
-    }
-    .edge {
-      stroke: var(--border);
-      stroke-width: 1.8;
-      transition: stroke 0.25s, stroke-width 0.25s;
-    }
-    .edge.active { stroke: var(--gold); stroke-width: 2.5; }
-
-    .node-circle {
-      fill: var(--surface);
-      stroke: var(--gold-dim);
-      stroke-width: 1.5;
-      cursor: pointer;
-      transition: fill 0.2s, stroke 0.2s, transform 0.2s;
-      transform-origin: center;
-      transform-box: fill-box;
-    }
-    .node-circle:hover, .node-circle.selected {
-      fill: var(--gold-dim);
-      stroke: var(--gold);
-      stroke-width: 2.5;
-    }
-    .node-label {
-      fill: var(--text);
-      font-family: 'EB Garamond', serif;
-      font-size: 13px;
-      text-anchor: middle;
-      dominant-baseline: central;
-      pointer-events: none;
-      font-weight: 600;
-    }
-    .node-order {
-      fill: var(--muted);
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 9px;
-      text-anchor: middle;
-      dominant-baseline: central;
-      pointer-events: none;
-    }
-    .node-group {
-      cursor: pointer;
-    }
-    .node-group:hover .node-circle { fill: var(--gold-dim); stroke: var(--gold); stroke-width: 2.5; }
-
-    /* ── INFO PANEL ── */
-    .info-panel {
-      flex: 0 0 340px;
-      background: var(--panel-bg);
-      border: 1px solid var(--border);
-      border-radius: 4px;
-      padding: 1.5rem;
-      min-height: 520px;
-      position: sticky;
-      top: 2rem;
-    }
-    .info-panel .hint {
-      color: var(--muted);
-      font-style: italic;
-      font-size: 1rem;
-      text-align: center;
-      padding-top: 3rem;
-    }
-    .info-panel .hint span {
-      display: block;
-      font-size: 2.5rem;
-      margin-bottom: 0.8rem;
-      opacity: 0.3;
-    }
-    .group-tag {
-      display: inline-block;
-      padding: 0.2rem 0.7rem;
-      background: var(--gold-dim);
-      color: var(--bg);
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 0.72rem;
-      letter-spacing: 0.06em;
-      border-radius: 2px;
-      margin-bottom: 1rem;
-    }
-    .info-name {
-      font-size: 2rem;
-      font-weight: 600;
-      color: var(--gold);
-      margin-bottom: 0.3rem;
-      line-height: 1.2;
-    }
-    .info-order {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 0.85rem;
-      color: var(--teal);
-      margin-bottom: 1.2rem;
-    }
-    .info-desc {
-      font-size: 1rem;
-      line-height: 1.7;
-      color: var(--text);
-      margin-bottom: 1.4rem;
-      border-left: 2px solid var(--gold-dim);
-      padding-left: 0.9rem;
-    }
-    .resolvent-table {
-      width: 100%;
-      border-collapse: collapse;
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 0.75rem;
-      margin-bottom: 1.4rem;
-    }
-    .resolvent-table caption {
-      text-align: left;
-      font-size: 0.72rem;
-      letter-spacing: 0.1em;
-      color: var(--muted);
-      text-transform: uppercase;
-      margin-bottom: 0.4rem;
-      caption-side: top;
-      padding-bottom: 0.4rem;
-    }
-    .resolvent-table th {
-      text-align: left;
-      color: var(--muted);
-      font-weight: 400;
-      padding: 0.3rem 0.5rem;
-      border-bottom: 1px solid var(--border);
-    }
-    .resolvent-table td {
-      padding: 0.35rem 0.5rem;
-      border-bottom: 1px solid #1e2230;
-      color: var(--text);
-    }
-    .resolvent-table tr:hover td { background: #1e2435; }
-    .factor-pill {
-      background: #1e2435;
-      border: 1px solid var(--border);
-      border-radius: 2px;
-      padding: 0.1rem 0.35rem;
-      color: var(--teal);
-    }
-    .example-poly {
-      background: #0f1118;
-      border: 1px solid var(--border);
-      border-radius: 3px;
-      padding: 0.8rem 1rem;
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 0.72rem;
-      color: var(--gold);
-      line-height: 1.7;
-      word-break: break-all;
-    }
-    .example-poly-label {
-      font-size: 0.72rem;
-      color: var(--muted);
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      margin-bottom: 0.4rem;
-    }
-    .solvable-badge {
-      display: inline-block;
-      margin-top: 0.8rem;
-      padding: 0.2rem 0.7rem;
-      border: 1px solid var(--teal);
-      color: var(--teal);
-      font-size: 0.72rem;
-      font-family: 'JetBrains Mono', monospace;
-      letter-spacing: 0.06em;
-      border-radius: 2px;
-    }
-    .nonsolvable-badge {
-      display: inline-block;
-      margin-top: 0.8rem;
-      padding: 0.2rem 0.7rem;
-      border: 1px solid var(--red);
-      color: var(--red);
-      font-size: 0.72rem;
-      font-family: 'JetBrains Mono', monospace;
-      letter-spacing: 0.06em;
-      border-radius: 2px;
-    }
-
-    /* ── BOTTOM TABLE ── */
-    .summary-section {
-      width: 100%;
-      max-width: 1200px;
-      padding: 0 2rem 3rem;
-    }
-    .summary-section h2 {
-      font-size: 1.3rem;
-      font-weight: 400;
-      color: var(--gold);
-      margin-bottom: 1rem;
-      padding-bottom: 0.5rem;
-      border-bottom: 1px solid var(--border);
-    }
-    table.full-table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 0.85rem;
-    }
-    table.full-table th {
-      text-align: left;
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 0.72rem;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      color: var(--muted);
-      padding: 0.6rem 0.8rem;
-      border-bottom: 1px solid var(--border);
-    }
-    table.full-table td {
-      padding: 0.55rem 0.8rem;
-      border-bottom: 1px solid #191c26;
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 0.78rem;
-      vertical-align: middle;
-    }
-    table.full-table tr:hover td { background: #13161e; cursor: pointer; }
-    table.full-table td.group-name { color: var(--gold); font-weight: 600; }
-    table.full-table td.order { color: var(--teal); }
-
-    footer {
-      width: 100%;
-      border-top: 1px solid var(--border);
-      padding: 1.2rem 2rem;
-      text-align: center;
-      font-size: 0.8rem;
-      color: var(--muted);
-      font-style: italic;
-    }
-
-    @media (max-width: 780px) {
-      .layout { flex-direction: column; }
-      .info-panel { flex: none; width: 100%; position: static; }
-    }
+    :root{--bg:#0d0f14;--surface:#13161e;--border:#2a2f3d;--gold:#c9a84c;--gold-dim:#7a6230;--teal:#4ecdc4;--red:#e05c5c;--text:#e8e2d4;--muted:#6e7280;--panel-bg:#181c27;--green:#6bcb77;--purple:#b48ead;}
+    *{box-sizing:border-box;margin:0;padding:0;}
+    body{background:var(--bg);color:var(--text);font-family:'EB Garamond',Georgia,serif;min-height:100vh;display:flex;flex-direction:column;align-items:center;}
+    nav{width:100%;background:var(--surface);border-bottom:1px solid var(--border);display:flex;justify-content:center;position:sticky;top:0;z-index:100;}
+    nav button{background:none;border:none;color:var(--muted);font-family:'JetBrains Mono',monospace;font-size:0.72rem;letter-spacing:0.1em;text-transform:uppercase;padding:0.9rem 1.5rem;cursor:pointer;border-bottom:2px solid transparent;transition:all 0.2s;}
+    nav button:hover{color:var(--text);}
+    nav button.active{color:var(--gold);border-bottom:2px solid var(--gold);}
+    header{width:100%;text-align:center;padding:2rem 2rem 1.2rem;border-bottom:1px solid var(--border);}
+    header h1{font-size:clamp(1.3rem,3vw,2.2rem);font-weight:600;color:var(--gold);margin-bottom:0.3rem;}
+    header p{font-size:0.95rem;font-style:italic;color:var(--muted);}
+    .author-badge{display:inline-block;margin-top:0.5rem;padding:0.2rem 0.8rem;border:1px solid var(--gold-dim);border-radius:2px;font-size:0.7rem;font-family:'JetBrains Mono',monospace;color:var(--gold-dim);letter-spacing:0.08em;}
+    .page{display:none;width:100%;max-width:1280px;padding:1.8rem 2rem;}
+    .page.active{display:block;}
+    .stat-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(155px,1fr));gap:0.9rem;margin-bottom:1.8rem;}
+    .stat-card{background:var(--surface);border:1px solid var(--border);border-radius:4px;padding:1.1rem 0.9rem;text-align:center;}
+    .stat-card .val{font-size:1.5rem;font-weight:600;color:var(--gold);font-family:'JetBrains Mono',monospace;}
+    .stat-card .lbl{font-size:0.68rem;color:var(--muted);letter-spacing:0.08em;text-transform:uppercase;margin-top:0.25rem;}
+    .stat-card .sub{font-size:0.7rem;color:var(--teal);margin-top:0.15rem;font-family:'JetBrains Mono',monospace;}
+    .sec-title{font-size:0.72rem;font-family:'JetBrains Mono',monospace;letter-spacing:0.12em;color:var(--muted);text-transform:uppercase;margin-bottom:0.9rem;padding-bottom:0.4rem;border-bottom:1px solid var(--border);}
+    .chart-grid{display:grid;grid-template-columns:1fr 1fr;gap:1.3rem;margin-bottom:1.8rem;}
+    .chart-box{background:var(--surface);border:1px solid var(--border);border-radius:4px;padding:1.2rem;}
+    .chart-box h3{font-size:0.68rem;font-family:'JetBrains Mono',monospace;color:var(--muted);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:0.9rem;}
+    .chart-box canvas{max-height:260px;}
+    .layout{display:flex;gap:1.8rem;align-items:flex-start;}
+    .lattice-wrap{flex:1 1 480px;background:var(--surface);border:1px solid var(--border);border-radius:4px;padding:1.4rem;}
+    .lattice-wrap h2{font-size:0.72rem;font-family:'JetBrains Mono',monospace;letter-spacing:0.12em;color:var(--muted);text-transform:uppercase;margin-bottom:1rem;}
+    svg#lattice{width:100%;height:auto;overflow:visible;}
+    .edge{stroke:var(--border);stroke-width:1.8;transition:stroke 0.25s,stroke-width 0.25s;}
+    .edge.active{stroke:var(--gold);stroke-width:2.5;}
+    .node-circle{fill:var(--surface);stroke:var(--gold-dim);stroke-width:1.5;cursor:pointer;transition:fill 0.2s,stroke 0.2s;}
+    .node-group:hover .node-circle,.node-circle.selected{fill:var(--gold-dim);stroke:var(--gold);stroke-width:2.5;}
+    .node-label{fill:var(--text);font-family:'EB Garamond',serif;font-size:13px;text-anchor:middle;dominant-baseline:central;pointer-events:none;font-weight:600;}
+    .node-order{fill:var(--muted);font-family:'JetBrains Mono',monospace;font-size:9px;text-anchor:middle;dominant-baseline:central;pointer-events:none;}
+    .node-group{cursor:pointer;}
+    .info-panel{flex:0 0 330px;background:var(--panel-bg);border:1px solid var(--border);border-radius:4px;padding:1.4rem;min-height:460px;position:sticky;top:48px;}
+    .hint{color:var(--muted);font-style:italic;font-size:0.95rem;text-align:center;padding-top:2.5rem;}
+    .hint span{display:block;font-size:2rem;margin-bottom:0.7rem;opacity:0.3;}
+    .group-tag{display:inline-block;padding:0.18rem 0.6rem;background:var(--gold-dim);color:var(--bg);font-family:'JetBrains Mono',monospace;font-size:0.68rem;border-radius:2px;margin-bottom:0.7rem;}
+    .info-name{font-size:1.7rem;font-weight:600;color:var(--gold);margin-bottom:0.25rem;}
+    .info-order{font-family:'JetBrains Mono',monospace;font-size:0.78rem;color:var(--teal);margin-bottom:0.9rem;}
+    .info-desc{font-size:0.9rem;line-height:1.65;color:var(--text);margin-bottom:1rem;border-left:2px solid var(--gold-dim);padding-left:0.75rem;}
+    .resolvent-table{width:100%;border-collapse:collapse;font-family:'JetBrains Mono',monospace;font-size:0.68rem;margin-bottom:1rem;}
+    .resolvent-table caption{text-align:left;font-size:0.65rem;letter-spacing:0.1em;color:var(--muted);text-transform:uppercase;caption-side:top;padding-bottom:0.35rem;}
+    .resolvent-table th{text-align:left;color:var(--muted);font-weight:400;padding:0.28rem 0.4rem;border-bottom:1px solid var(--border);}
+    .resolvent-table td{padding:0.28rem 0.4rem;border-bottom:1px solid #1e2230;color:var(--text);}
+    .factor-pill{background:#1e2435;border:1px solid var(--border);border-radius:2px;padding:0.08rem 0.28rem;color:var(--teal);}
+    .example-poly{background:#0f1118;border:1px solid var(--border);border-radius:3px;padding:0.6rem 0.8rem;font-family:'JetBrains Mono',monospace;font-size:0.67rem;color:var(--gold);line-height:1.65;word-break:break-all;margin-top:0.25rem;}
+    .example-poly-label{font-size:0.65rem;color:var(--muted);letter-spacing:0.1em;text-transform:uppercase;}
+    .solvable-badge{display:inline-block;margin-top:0.5rem;padding:0.18rem 0.55rem;border:1px solid var(--teal);color:var(--teal);font-size:0.65rem;font-family:'JetBrains Mono',monospace;border-radius:2px;}
+    .nonsolvable-badge{display:inline-block;margin-top:0.5rem;padding:0.18rem 0.55rem;border:1px solid var(--red);color:var(--red);font-size:0.65rem;font-family:'JetBrains Mono',monospace;border-radius:2px;}
+    table.full-table{width:100%;border-collapse:collapse;margin-bottom:2rem;}
+    table.full-table th{text-align:left;font-family:'JetBrains Mono',monospace;font-size:0.65rem;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);padding:0.45rem 0.65rem;border-bottom:1px solid var(--border);}
+    table.full-table td{padding:0.45rem 0.65rem;border-bottom:1px solid #191c26;font-family:'JetBrains Mono',monospace;font-size:0.72rem;vertical-align:middle;}
+    table.full-table tr:hover td{background:#13161e;cursor:pointer;}
+    .gname{color:var(--gold);font-weight:600;}.teal{color:var(--teal);}.green{color:var(--green);}.red{color:var(--red);}
+    .count-bar{display:flex;align-items:center;gap:0.6rem;margin-bottom:0.35rem;}
+    .count-bar .label{font-family:'JetBrains Mono',monospace;font-size:0.7rem;color:var(--text);width:100px;flex-shrink:0;}
+    .count-bar .bar{height:15px;border-radius:2px;}
+    .count-bar .num{font-family:'JetBrains Mono',monospace;font-size:0.68rem;color:var(--muted);}
+    .ml-grid{display:grid;grid-template-columns:1fr 1fr;gap:1.3rem;margin-bottom:1.8rem;}
+    .ml-box{background:var(--surface);border:1px solid var(--border);border-radius:4px;padding:1.3rem;}
+    .ml-box h3{font-size:0.68rem;font-family:'JetBrains Mono',monospace;color:var(--muted);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:0.9rem;}
+    .cm-wrap{overflow-x:auto;}
+    .cm-table{border-collapse:collapse;font-family:'JetBrains Mono',monospace;font-size:0.65rem;width:100%;}
+    .cm-table th{padding:0.35rem 0.45rem;color:var(--muted);font-weight:400;text-align:center;border-bottom:1px solid var(--border);}
+    .cm-table td{padding:0.3rem 0.45rem;text-align:center;}
+    .cm-diag{background:#1e3a2f;color:var(--green);font-weight:600;}.cm-off{color:var(--muted);}.cm-high{background:#3a1e1e;color:var(--red);}
+    .info-cards{display:grid;grid-template-columns:1fr 1fr 1fr;gap:1rem;margin-bottom:1.8rem;}
+    .info-card{background:var(--surface);border:1px solid var(--border);border-radius:4px;padding:1.1rem;}
+    .info-card .ic-title{font-family:'JetBrains Mono',monospace;font-size:0.65rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:0.5rem;}
+    .info-card p{font-size:0.88rem;line-height:1.6;color:var(--text);}
+    .pipe-step{background:#1e2435;border:1px solid var(--border);border-radius:3px;padding:0.55rem 0.35rem;font-family:'JetBrains Mono',monospace;font-size:0.62rem;text-align:center;flex:1;min-width:90px;}
+    footer{width:100%;border-top:1px solid var(--border);padding:0.9rem 2rem;text-align:center;font-size:0.75rem;color:var(--muted);font-style:italic;margin-top:1.5rem;}
+    @media(max-width:800px){.layout,.chart-grid,.ml-grid,.info-cards{flex-direction:column;grid-template-columns:1fr;}.info-panel{flex:none;width:100%;position:static;}}
   </style>
 </head>
 <body>
-
 <header>
-  <h1>Transitive Subgroups of $S_7$</h1>
-  <p>The Galois Group Lattice for Irreducible Septic Polynomials over $\mathbb{Q}$</p>
-  <div class="author-badge">JURGEN MEZINAJ · OAKLAND UNIVERSITY</div>
+  <h1>AIMS-7 &mdash; Galois Groups of Irreducible Septic Polynomials</h1>
+  <p>Database of 1.69 million septics &middot; Statistical analysis &middot; ML classification</p>
+  <div class="author-badge">JURGEN MEZINAJ &middot; OAKLAND UNIVERSITY &middot; arXiv:2511.16622</div>
 </header>
+<nav>
+  <button class="active" onclick="showPage('overview',this)">Overview</button>
+  <button onclick="showPage('lattice',this)">Subgroup Lattice</button>
+  <button onclick="showPage('stats',this)">Statistics</button>
+  <button onclick="showPage('ml',this)">Machine Learning</button>
+</nav>
 
-<div class="layout">
-  <!-- LATTICE -->
-  <div class="lattice-wrap">
-    <h2>Subgroup Inclusion Lattice — click any node</h2>
-    <svg id="lattice" viewBox="0 0 500 560">
-      <defs>
-        <marker id="arrowhead" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
-          <polygon points="0 0, 8 3, 0 6" fill="#2a2f3d"/>
-        </marker>
-      </defs>
-      <!-- EDGES (drawn first, behind nodes) -->
-      <!-- C7 -> D7 -->
-      <line class="edge" id="e-1-2" x1="250" y1="490" x2="140" y2="400"/>
-      <!-- C7 -> C7xC3 -->
-      <line class="edge" id="e-1-3" x1="250" y1="490" x2="280" y2="400"/>
-      <!-- D7 -> C7xC6 -->
-      <line class="edge" id="e-2-4" x1="140" y1="370" x2="175" y2="300"/>
-      <!-- C7xC3 -> C7xC6 -->
-      <line class="edge" id="e-3-4" x1="280" y1="370" x2="200" y2="300"/>
-      <!-- C7xC3 -> L(3,2) -->
-      <line class="edge" id="e-3-5" x1="295" y1="370" x2="360" y2="300"/>
-      <!-- C7xC6 -> S7 -->
-      <line class="edge" id="e-4-7" x1="190" y1="270" x2="240" y2="130"/>
-      <!-- L(3,2) -> A7 -->
-      <line class="edge" id="e-5-6" x1="370" y1="270" x2="350" y2="200"/>
-      <!-- A7 -> S7 -->
-      <line class="edge" id="e-6-7" x1="345" y1="170" x2="258" y2="135"/>
-      <!-- D7 -> S7 (via long edge) -->
-      <line class="edge" id="e-2-7" x1="138" y1="365" x2="240" y2="138" stroke-dasharray="5,4"/>
-
-      <!-- NODE 7: S7 -->
-      <g class="node-group" data-id="7" onclick="selectNode(7)">
-        <circle class="node-circle" id="nc-7" cx="250" cy="110" r="34"/>
-        <text class="node-label" x="250" y="106">$S_7$</text>
-        <text class="node-order" x="250" y="122">order 5040</text>
-      </g>
-
-      <!-- NODE 6: A7 -->
-      <g class="node-group" data-id="6" onclick="selectNode(6)">
-        <circle class="node-circle" id="nc-6" cx="350" cy="185" r="30"/>
-        <text class="node-label" x="350" y="181">$A_7$</text>
-        <text class="node-order" x="350" y="195">2520</text>
-      </g>
-
-      <!-- NODE 5: PSL(3,2) -->
-      <g class="node-group" data-id="5" onclick="selectNode(5)">
-        <circle class="node-circle" id="nc-5" cx="375" cy="285" r="32"/>
-        <text class="node-label" x="375" y="280">$L(3,2)$</text>
-        <text class="node-order" x="375" y="294">168</text>
-      </g>
-
-      <!-- NODE 4: C7xC6 -->
-      <g class="node-group" data-id="4" onclick="selectNode(4)">
-        <circle class="node-circle" id="nc-4" cx="190" cy="285" r="32"/>
-        <text class="node-label" x="190" y="280">$C_7{\rtimes}C_6$</text>
-        <text class="node-order" x="190" y="294">42</text>
-      </g>
-
-      <!-- NODE 3: C7xC3 -->
-      <g class="node-group" data-id="3" onclick="selectNode(3)">
-        <circle class="node-circle" id="nc-3" cx="285" cy="385" r="32"/>
-        <text class="node-label" x="285" y="380">$C_7{\rtimes}C_3$</text>
-        <text class="node-order" x="285" y="394">21</text>
-      </g>
-
-      <!-- NODE 2: D7 -->
-      <g class="node-group" data-id="2" onclick="selectNode(2)">
-        <circle class="node-circle" id="nc-2" cx="138" cy="385" r="28"/>
-        <text class="node-label" x="138" y="381">$D_7$</text>
-        <text class="node-order" x="138" y="393">14</text>
-      </g>
-
-      <!-- NODE 1: C7 -->
-      <g class="node-group" data-id="1" onclick="selectNode(1)">
-        <circle class="node-circle" id="nc-1" cx="250" cy="500" r="30"/>
-        <text class="node-label" x="250" y="496">$C_7$</text>
-        <text class="node-order" x="250" y="508">7</text>
-      </g>
-    </svg>
+<!-- OVERVIEW -->
+<div class="page active" id="page-overview">
+  <div class="stat-cards">
+    <div class="stat-card"><div class="val">1,686,353</div><div class="lbl">Total Polynomials</div><div class="sub">AIMS-7 dataset</div></div>
+    <div class="stat-card"><div class="val">7</div><div class="lbl">Galois Groups</div><div class="sub">transitive subgroups of S7</div></div>
+    <div class="stat-card"><div class="val">92.5%</div><div class="lbl">Are S7</div><div class="sub">1,559,957 entries</div></div>
+    <div class="stat-card"><div class="val">0.8525</div><div class="lbl">ML Balanced Acc.</div><div class="sub">non-S7 + invariants model</div></div>
+    <div class="stat-card"><div class="val">252</div><div class="lbl">C7 Polynomials</div><div class="sub">rarest group in AIMS-7</div></div>
+    <div class="stat-card"><div class="val">h = 28</div><div class="lbl">First C7 Example</div><div class="sub">from p=29 cyclotomic field</div></div>
   </div>
+  <div class="sec-title">AIMS-7 Full Dataset -- Real Counts from AIMS-7.csv (Table 9)</div>
+  <div id="count-bars" style="margin-bottom:1.8rem;background:var(--surface);border:1px solid var(--border);border-radius:4px;padding:1.2rem;"></div>
+  <div class="chart-grid">
+    <div class="chart-box"><h3>Full Dataset Distribution (including S7)</h3><canvas id="chart-pie"></canvas></div>
+    <div class="chart-box"><h3>Non-S7 Distribution (126,396 polynomials)</h3><canvas id="chart-pie2"></canvas></div>
+  </div>
+  <div class="sec-title">Complete Reference Table -- AIMS-7.csv + AIMS-7inv.csv</div>
+  <table class="full-table">
+    <thead><tr><th>Group</th><th>Order</th><th>AIMS-7 Count</th><th>LMFDB Count</th><th>h le 4</th><th>R1 factors</th><th>R2 factors</th><th>R3 factors</th><th>Solvable</th></tr></thead>
+    <tbody id="ref-tbody"></tbody>
+  </table>
+</div>
 
-  <!-- INFO PANEL -->
-  <div class="info-panel" id="info-panel">
-    <div class="hint">
-      <span>◈</span>
-      Click any node in the lattice to explore that Galois group — its order, resolvent factorizations, and example polynomials from the database.
+<!-- LATTICE -->
+<div class="page" id="page-lattice">
+  <div class="layout">
+    <div class="lattice-wrap">
+      <h2>Subgroup Inclusion Lattice -- click any node</h2>
+      <svg id="lattice" viewBox="0 0 500 560">
+        <line class="edge" id="e-1-2" x1="250" y1="490" x2="140" y2="400"/>
+        <line class="edge" id="e-1-3" x1="250" y1="490" x2="280" y2="400"/>
+        <line class="edge" id="e-2-4" x1="140" y1="370" x2="175" y2="300"/>
+        <line class="edge" id="e-3-4" x1="280" y1="370" x2="200" y2="300"/>
+        <line class="edge" id="e-3-5" x1="295" y1="370" x2="360" y2="300"/>
+        <line class="edge" id="e-4-7" x1="190" y1="270" x2="240" y2="130"/>
+        <line class="edge" id="e-5-6" x1="370" y1="270" x2="350" y2="200"/>
+        <line class="edge" id="e-6-7" x1="345" y1="170" x2="258" y2="135"/>
+        <line class="edge" id="e-2-7" x1="138" y1="365" x2="240" y2="138" stroke-dasharray="5,4"/>
+        <g class="node-group" onclick="selectNode(7)"><circle class="node-circle" id="nc-7" cx="250" cy="110" r="34"/><text class="node-label" x="250" y="106">S7</text><text class="node-order" x="250" y="122">5040</text></g>
+        <g class="node-group" onclick="selectNode(6)"><circle class="node-circle" id="nc-6" cx="350" cy="185" r="30"/><text class="node-label" x="350" y="181">A7</text><text class="node-order" x="350" y="195">2520</text></g>
+        <g class="node-group" onclick="selectNode(5)"><circle class="node-circle" id="nc-5" cx="375" cy="285" r="32"/><text class="node-label" x="375" y="280">L(3,2)</text><text class="node-order" x="375" y="294">168</text></g>
+        <g class="node-group" onclick="selectNode(4)"><circle class="node-circle" id="nc-4" cx="190" cy="285" r="32"/><text class="node-label" x="190" y="280">C7xC6</text><text class="node-order" x="190" y="294">42</text></g>
+        <g class="node-group" onclick="selectNode(3)"><circle class="node-circle" id="nc-3" cx="285" cy="385" r="32"/><text class="node-label" x="285" y="380">C7xC3</text><text class="node-order" x="285" y="394">21</text></g>
+        <g class="node-group" onclick="selectNode(2)"><circle class="node-circle" id="nc-2" cx="138" cy="385" r="28"/><text class="node-label" x="138" y="381">D7</text><text class="node-order" x="138" y="393">14</text></g>
+        <g class="node-group" onclick="selectNode(1)"><circle class="node-circle" id="nc-1" cx="250" cy="500" r="30"/><text class="node-label" x="250" y="496">C7</text><text class="node-order" x="250" y="508">7</text></g>
+      </svg>
+    </div>
+    <div class="info-panel" id="info-panel">
+      <div class="hint"><span>&#9672;</span>Click any node to explore that Galois group &mdash; order, resolvent factorizations, and real AIMS-7 counts.</div>
     </div>
   </div>
 </div>
 
-<!-- FULL TABLE -->
-<div class="summary-section">
-  <h2>Resolvent Factorization Patterns — Table 2</h2>
-  <table class="full-table">
-    <thead>
-      <tr>
-        <th>Galois Group</th>
-        <th>Order</th>
-        <th>$R_1(x)$ Quadratic</th>
-        <th>$R_2(x)$ 30-ic</th>
-        <th>$R_3(x)$ 120-ic</th>
-        <th>Solvable?</th>
-        <th>Count (h≤4)</th>
-      </tr>
-    </thead>
-    <tbody id="summary-tbody"></tbody>
-  </table>
+<!-- STATS -->
+<div class="page" id="page-stats">
+  <div class="chart-grid">
+    <div class="chart-box"><h3>Mean Log-Height E[h(f)|G] -- Figure 5 of paper</h3><canvas id="chart-height"></canvas></div>
+    <div class="chart-box"><h3>Counts at Height le 4 -- Table 6 (log scale)</h3><canvas id="chart-h4"></canvas></div>
+  </div>
+  <div class="chart-grid">
+    <div class="chart-box"><h3>Rational vs Irreducible Points by Height -- Table 4</h3><canvas id="chart-rational"></canvas></div>
+    <div class="chart-box"><h3>LMFDB vs AIMS-7 Final Counts (non-S7 groups)</h3><canvas id="chart-sources"></canvas></div>
+  </div>
+  <div class="sec-title">Key Statistical Findings</div>
+  <div class="info-cards">
+    <div class="info-card"><div class="ic-title">Height-Complexity Trend</div><p>Counter-intuitively, higher group complexity is associated with smaller defining height. A7 and L(3,2) live at small heights; C7 and C7xC3 appear only at large heights.</p></div>
+    <div class="info-card"><div class="ic-title">Discriminant Correlation</div><p>Large heights accompany large |Delta_f|. The C7 and C7xC3 points in the joint (h, log|Delta|) plot cluster in the upper-right, far from A7 and L(3,2).</p></div>
+    <div class="info-card"><div class="ic-title">Cyclic Group Rarity</div><p>C7 and C7xC3 are completely absent at height le 4. The first C7 polynomial appears at h=28, from the cyclotomic field Q(zeta_29), derived from p=29.</p></div>
+  </div>
 </div>
 
-<footer>
-  Based on: <em>From Polynomials to Databases: Arithmetic Structures in Galois Theory</em> — Jurgen Mezinaj, Oakland University (arXiv:2511.16622)
-</footer>
+<!-- ML -->
+<div class="page" id="page-ml">
+  <div class="sec-title">Classification Pipeline -- AIMS-7.csv + AIMS-7inv.2025.csv</div>
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:4px;padding:1.3rem;margin-bottom:1.5rem;display:flex;gap:0.4rem;align-items:center;flex-wrap:wrap;">
+    <div class="pipe-step" style="color:var(--teal);border-color:var(--teal);">AIMS-7.csv<br><span style="color:var(--muted)">1.69M entries</span></div>
+    <div style="color:var(--gold-dim)">+</div>
+    <div class="pipe-step" style="color:var(--gold);border-color:var(--gold-dim);">AIMS-7inv.csv<br><span style="color:var(--muted)">j0-j4, Delta_f</span></div>
+    <div style="color:var(--gold-dim)">&rarr;</div>
+    <div class="pipe-step">Coefficients<br><span style="color:var(--muted)">a0...a7</span></div>
+    <div style="color:var(--gold-dim)">&rarr;</div>
+    <div class="pipe-step" style="color:var(--purple);border-color:var(--purple);">Hist. Gradient<br>Boosting<br><span style="color:var(--muted)">60/40 split</span></div>
+    <div style="color:var(--gold-dim)">&rarr;</div>
+    <div class="pipe-step" style="color:var(--green);border-color:var(--green);">Galois Group<br>Label<br><span style="color:var(--muted)">7 classes</span></div>
+  </div>
+  <div class="ml-grid">
+    <div class="ml-box"><h3>Model Comparison -- Balanced Accuracy</h3><canvas id="chart-models"></canvas></div>
+    <div class="ml-box"><h3>Non-S7 Model: Precision / Recall / F1 (Table 10)</h3><canvas id="chart-prf"></canvas></div>
+  </div>
+  <div class="sec-title">Confusion Matrix -- Non-S7 Test Set, 50,559 polynomials (Table 11)</div>
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:4px;padding:1.3rem;margin-bottom:1.5rem;">
+    <p style="font-size:0.82rem;color:var(--muted);margin-bottom:0.9rem;font-style:italic;">Rows = True label &middot; Columns = Predicted &middot; Green diagonal = correct &middot; Red = major errors</p>
+    <div class="cm-wrap"><table class="cm-table" id="cm-table"></table></div>
+    <p style="font-size:0.78rem;color:var(--muted);margin-top:0.8rem;">Main confusion: 2,616 true A7 classified as L(3,2), and 5,923 true L(3,2) classified as A7. All other group pairs are well-separated.</p>
+  </div>
+  <div class="ml-grid">
+    <div class="ml-box"><h3>Feature Importance (Neurosymbolic Model)</h3><canvas id="chart-features"></canvas></div>
+    <div class="ml-box"><h3>5-Fold Cross-Validation Balanced Accuracy</h3><canvas id="chart-cv"></canvas></div>
+  </div>
+  <div class="sec-title">Neurosymbolic Network Architecture (Section 8)</div>
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:4px;padding:1.3rem;margin-bottom:1.5rem;">
+    <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:0.4rem;text-align:center;font-family:'JetBrains Mono',monospace;font-size:0.62rem;">
+      <div style="background:#1e2435;border:1px solid var(--teal);border-radius:3px;padding:0.55rem 0.25rem;color:var(--teal);">1 Symbolic<br>Preprocess<br><span style="color:var(--muted)">Delta, j0-j4</span></div>
+      <div style="background:#1e2435;border:1px solid var(--border);border-radius:3px;padding:0.55rem 0.25rem;color:var(--text);">2 Feature<br>Transform<br><span style="color:var(--muted)">sgn*log10</span></div>
+      <div style="background:#1e2435;border:1px solid var(--border);border-radius:3px;padding:0.55rem 0.25rem;color:var(--text);">3 Concat<br>15-vector<br><span style="color:var(--muted)">coeff+inv</span></div>
+      <div style="background:#1e2435;border:1px solid var(--purple);border-radius:3px;padding:0.55rem 0.25rem;color:var(--purple);">4 Dense<br>128->64<br><span style="color:var(--muted)">ReLU</span></div>
+      <div style="background:#1e2435;border:1px solid var(--purple);border-radius:3px;padding:0.55rem 0.25rem;color:var(--purple);">5 Self-<br>Attention<br><span style="color:var(--muted)">dynamic</span></div>
+      <div style="background:#1e2435;border:1px solid var(--green);border-radius:3px;padding:0.55rem 0.25rem;color:var(--green);">6 Softmax<br>Output<br><span style="color:var(--muted)">6 non-S7</span></div>
+    </div>
+  </div>
+</div>
+
+<footer>Based on: <em>From Polynomials to Databases: Arithmetic Structures in Galois Theory</em> &mdash; Jurgen Mezinaj, Oakland University (arXiv:2511.16622)</footer>
 
 <script>
-const GROUPS = {
-  1: {
-    name: "C_7",
-    display: "$C_7$",
-    order: 7,
-    tag: "CYCLIC",
-    solvable: true,
-    desc: "The cyclic group of order 7. This is the simplest and rarest Galois group for irreducible septics. Polynomials with this Galois group arise naturally from cyclotomic fields $\\mathbb{Q}(\\zeta_p)$ for primes $p \\equiv 1 \\pmod{7}$. The first example appears at height $h = 28$ (from $p = 29$).",
-    r1: "1, 1",
-    r2: "1, 7, 7, 7, 7",
-    r3: "1, 17×7",
-    count: "0 (h≤4)",
-    example: "x⁷ + x⁶ − 12x⁵ − 7x⁴ + 28x³ + 14x² − 9x + 1",
-    exampleNote: "First example, height 28 (p = 29)",
-    connected: [2, 3]
-  },
-  2: {
-    name: "D_7",
-    display: "$D_7$",
-    order: 14,
-    tag: "DIHEDRAL",
-    solvable: true,
-    desc: "The dihedral group of order 14, generated by a rotation of order 7 and a reflection of order 2. Contains $C_7$ as a normal subgroup. Polynomials with this group have an irreducible quadratic resolvent (odd permutations are present) but a structured 30-ic resolvent.",
-    r1: "2",
-    r2: "2, 14, 14",
-    r3: "1, 7×7, 5×14",
-    count: "18",
-    example: "—",
-    exampleNote: "18 examples found at height ≤ 4",
-    connected: [1, 4, 7]
-  },
-  3: {
-    name: "C_7 \\rtimes C_3",
-    display: "$C_7 \\rtimes C_3$",
-    order: 21,
-    tag: "FROBENIUS",
-    solvable: true,
-    desc: "The Frobenius group $F_{21}$ of order 21 — a semidirect product of $C_7$ and $C_3$. It is the unique non-abelian group of order 21. An infinite family of septics with this group is constructed via Chebyshev polynomials $T_7(x/\\sqrt{S})$ for $S = u^2 + 7v^2$.",
-    r1: "1, 1",
-    r2: "1, 7, 7, 7, 7",
-    r3: "1, 7, 7, 7, 7, 21, 21, 21, 21",
-    count: "0 (h≤4); 24,374 total",
-    example: "x⁷ − 8x⁵ − 2x⁴ + 16x³ + 6x² − 6x − 2",
-    exampleNote: "Smallest example, height 16",
-    connected: [1, 4, 5]
-  },
-  4: {
-    name: "C_7 \\rtimes C_6",
-    display: "$C_7 \\rtimes C_6$",
-    order: 42,
-    tag: "METACYCLIC",
-    solvable: true,
-    desc: "The metacyclic group $F_{42}$ of order 42, also called the Frobenius group of order 42. Solvable by radicals. Its identification requires the 120-ic resolvent $R_3(x)$. If $G \\subseteq C_7 \\rtimes C_6$, the polynomial is solvable and the factor degrees of $R_3$ include 1, 7, 14, 21, 21, 42.",
-    r1: "2",
-    r2: "2, 14, 14",
-    r3: "1, 7, 14, 21, 21, 42",
-    count: "4",
-    example: "—",
-    exampleNote: "4 examples found at height ≤ 4",
-    connected: [2, 3, 7]
-  },
-  5: {
-    name: "\\text{PSL}(3,2)",
-    display: "$L(3,2)$",
-    order: 168,
-    tag: "SIMPLE",
-    solvable: false,
-    desc: "The projective special linear group $\\text{PSL}(3,2) \\cong \\text{GL}(3,\\mathbb{F}_2)$, the unique simple group of order 168. It is a maximal subgroup of $S_7$ and $A_7$. Detected via the 30-ic resolvent: if $R_2(x)$ factors as degrees $1, 7, 8, 14$ over $\\mathbb{Q}$, then $G = L(3,2)$.",
-    r1: "1, 1",
-    r2: "1, 7, 8, 14",
-    r3: "8, 56, 56",
-    count: "136",
-    example: "—",
-    exampleNote: "136 examples at height ≤ 4",
-    connected: [3, 6]
-  },
-  6: {
-    name: "A_7",
-    display: "$A_7$",
-    order: 2520,
-    tag: "ALTERNATING",
-    solvable: false,
-    desc: "The alternating group $A_7$ of even permutations of 7 elements, order 2520. A simple group — its presence is detected by the quadratic resolvent: $\\sqrt{\\Delta_f} \\in \\mathbb{Q}$ (discriminant is a perfect square). The 30-ic resolvent factors as $15 + 15$ for $A_7$.",
-    r1: "1, 1",
-    r2: "15, 15",
-    r3: "120",
-    count: "138",
-    example: "—",
-    exampleNote: "138 examples at height ≤ 4",
-    connected: [5, 7]
-  },
-  7: {
-    name: "S_7",
-    display: "$S_7$",
-    order: 5040,
-    tag: "SYMMETRIC",
-    solvable: false,
-    desc: "The full symmetric group $S_7$, order $7! = 5040$. The generic Galois group — over 92% of all septics in the AIMS-7 database have this group. Both the quadratic and 30-ic resolvents are irreducible over $\\mathbb{Q}$. Not solvable by radicals.",
-    r1: "2",
-    r2: "30",
-    r3: "120",
-    count: "584,324",
-    example: "Generic — most random septics",
-    exampleNote: "Dominant group in the database",
-    connected: [2, 4, 6]
-  }
+const GROUPS={
+  1:{name:"C7",order:7,tag:"CYCLIC",solvable:true,aims7:252,lmfdb:129,h4:0,r1:"1, 1",r2:"1,7,7,7,7",r3:"1, 17x7",meanH:9.2,desc:"The cyclic group of order 7 -- the rarest in AIMS-7 with only 252 polynomials. Arises from cyclotomic fields Q(zeta_p) for primes p = 1 mod 7. Zero examples at height le 4; first at h=28 from p=29.",example:"x^7+x^6-12x^5-7x^4+28x^3+14x^2-9x+1",exNote:"First example, height 28, p=29",connected:[2,3]},
+  2:{name:"D7",order:14,tag:"DIHEDRAL",solvable:true,aims7:2163,lmfdb:2135,h4:18,r1:"2",r2:"2,14,14",r3:"1,7x7,5x14",meanH:3.1,desc:"The dihedral group of order 14. Contains C7 as a normal subgroup. R1 is irreducible (odd permutations present). Distinguished from C7xC6 via the 120-ic resolvent R3.",example:"18 examples at height le 4",exNote:"2,163 total in AIMS-7",connected:[1,4,7]},
+  3:{name:"C7xC3",order:21,tag:"FROBENIUS F21",solvable:true,aims7:24457,lmfdb:84,h4:0,r1:"1, 1",r2:"1,7,7,7,7",r3:"1,7,7,7,7,21x4",meanH:9.7,desc:"The Frobenius group F21 of order 21 -- the unique non-abelian group of order 21. Constructed via Chebyshev polynomials T7(x/sqrt(S)) for S=u^2+7v^2. Pipeline found 24,374 such septics; LMFDB had only 84.",example:"x^7-8x^5-2x^4+16x^3+6x^2-6x-2",exNote:"Smallest example, height 16",connected:[1,4,5]},
+  4:{name:"C7xC6",order:42,tag:"METACYCLIC F42",solvable:true,aims7:1550,lmfdb:1547,h4:4,r1:"2",r2:"2,14,14",r3:"1,7,14,21,21,42",meanH:3.0,desc:"The metacyclic Frobenius group F42 of order 42. Solvable by radicals. Requires all three resolvents for identification: same R1, R2 pattern as D7, but R3 factors as 1+7+14+21+21+42.",example:"4 examples at height le 4",exNote:"1,550 total in AIMS-7",connected:[2,3,7]},
+  5:{name:"L(3,2)",order:168,tag:"SIMPLE GROUP",solvable:false,aims7:40977,lmfdb:40861,h4:136,r1:"1, 1",r2:"1,7,8,14",r3:"8,56,56",meanH:1.9,desc:"The projective special linear group PSL(3,2), the unique simple group of order 168 and a maximal subgroup of A7. Detected when R2(x) factors as 1+7+8+14. Main ML confusion is between A7 and L(3,2).",example:"136 examples at height le 4",exNote:"40,977 total in AIMS-7",connected:[3,6]},
+  6:{name:"A7",order:2520,tag:"ALTERNATING",solvable:false,aims7:56997,lmfdb:56887,h4:138,r1:"1, 1",r2:"15,15",r3:"120",meanH:1.7,desc:"The alternating group A7 of even permutations, order 2520. Simple group. Detected by the quadratic resolvent: discriminant Delta_f is a perfect square iff G is contained in A7. R2 factors as 15+15.",example:"138 examples at height le 4",exNote:"56,997 total in AIMS-7",connected:[5,7]},
+  7:{name:"S7",order:5040,tag:"SYMMETRIC",solvable:false,aims7:1559957,lmfdb:1062232,h4:584324,r1:"2",r2:"30",r3:"120",meanH:1.5,desc:"The full symmetric group S7, order 7!=5040. The generic Galois group -- 92.5% of all septics in AIMS-7. Both R1 and R2 are irreducible over Q. Not solvable by radicals.",example:"Generic -- most random septics",exNote:"1,559,957 total (92.5% of AIMS-7)",connected:[2,4,6]}
 };
+const ORDER=[7,6,5,4,3,2,1];
+const COLORS={7:'#c9a84c',6:'#4ecdc4',5:'#b48ead',4:'#6bcb77',3:'#4a9eff',2:'#f4a261',1:'#e05c5c'};
 
-const TABLE_DATA = [7,6,5,4,3,2,1];
+function showPage(id,btn){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('nav button').forEach(b=>b.classList.remove('active'));
+  document.getElementById('page-'+id).classList.add('active');
+  btn.classList.add('active');
+}
 
-function selectNode(id) {
-  // deselect all
-  document.querySelectorAll('.node-circle').forEach(c => c.classList.remove('selected'));
-  document.querySelectorAll('.edge').forEach(e => e.classList.remove('active'));
+// count bars
+const total=Object.values(GROUPS).reduce((s,g)=>s+g.aims7,0);
+const barsDiv=document.getElementById('count-bars');
+ORDER.forEach(id=>{
+  const g=GROUPS[id];
+  const pct=(g.aims7/total*100).toFixed(2);
+  const w=Math.max((g.aims7/GROUPS[7].aims7)*100,0.4);
+  barsDiv.innerHTML+=`<div class="count-bar"><div class="label">${g.name}</div><div class="bar" style="width:${w}%;background:${COLORS[id]};opacity:0.75;"></div><div class="num">${g.aims7.toLocaleString()} <span style="color:#3a4055">(${pct}%)</span></div></div>`;
+});
 
-  // select clicked
-  document.getElementById('nc-' + id).classList.add('selected');
+// reference table
+const refTbody=document.getElementById('ref-tbody');
+ORDER.forEach(id=>{
+  const g=GROUPS[id];
+  const tr=document.createElement('tr');
+  tr.innerHTML=`<td class="gname">${g.name}</td><td class="teal">${g.order.toLocaleString()}</td><td style="color:${COLORS[id]};font-weight:600">${g.aims7.toLocaleString()}</td><td style="color:var(--muted)">${g.lmfdb.toLocaleString()}</td><td>${g.h4.toLocaleString()}</td><td>${g.r1}</td><td>${g.r2}</td><td>${g.r3}</td><td class="${g.solvable?'green':'red'}">${g.solvable?'Yes':'No'}</td>`;
+  refTbody.appendChild(tr);
+});
 
-  // highlight edges
-  const g = GROUPS[id];
-  g.connected.forEach(nid => {
-    const e1 = document.getElementById('e-' + Math.min(id,nid) + '-' + Math.max(id,nid));
-    if (e1) e1.classList.add('active');
+Chart.defaults.color='#6e7280';
+Chart.defaults.borderColor='#2a2f3d';
+Chart.defaults.font.family="'JetBrains Mono', monospace";
+
+new Chart(document.getElementById('chart-pie'),{type:'doughnut',data:{labels:ORDER.map(id=>GROUPS[id].name),datasets:[{data:ORDER.map(id=>GROUPS[id].aims7),backgroundColor:ORDER.map(id=>COLORS[id]),borderColor:'#0d0f14',borderWidth:2}]},options:{plugins:{legend:{labels:{font:{size:11}}}},cutout:'55%'}});
+
+const noS7=ORDER.filter(id=>id!==7);
+new Chart(document.getElementById('chart-pie2'),{type:'doughnut',data:{labels:noS7.map(id=>GROUPS[id].name),datasets:[{data:noS7.map(id=>GROUPS[id].aims7),backgroundColor:noS7.map(id=>COLORS[id]),borderColor:'#0d0f14',borderWidth:2}]},options:{plugins:{legend:{labels:{font:{size:11}}}},cutout:'55%'}});
+
+new Chart(document.getElementById('chart-height'),{type:'bar',data:{labels:['C7xC3','C7','D7','C7xC6','L(3,2)','A7','S7'],datasets:[{label:'Mean log10(H+1)',data:[9.7,9.2,3.1,3.0,1.9,1.7,1.5],backgroundColor:['#4a9eff','#e05c5c','#f4a261','#6bcb77','#b48ead','#4ecdc4','#c9a84c'],borderRadius:2}]},options:{plugins:{legend:{display:false}},scales:{y:{grid:{color:'#2a2f3d'}},x:{grid:{display:false}}}}});
+
+const h4ids=ORDER.filter(id=>GROUPS[id].h4>0);
+new Chart(document.getElementById('chart-h4'),{type:'bar',data:{labels:h4ids.map(id=>GROUPS[id].name),datasets:[{label:'Count at h<=4',data:h4ids.map(id=>GROUPS[id].h4),backgroundColor:h4ids.map(id=>COLORS[id]),borderRadius:2}]},options:{plugins:{legend:{display:false}},scales:{y:{type:'logarithmic',grid:{color:'#2a2f3d'}},x:{grid:{display:false}}}}});
+
+new Chart(document.getElementById('chart-rational'),{type:'bar',data:{labels:['h=1','h=2','h=3','h=4'],datasets:[{label:'Rational points',data:[3280,94376,863144,4420040],backgroundColor:'#7a6230',borderRadius:2},{label:'Irreducible',data:[916,46552,538170,3103800],backgroundColor:'#c9a84c',borderRadius:2}]},options:{plugins:{legend:{labels:{font:{size:11}}}},scales:{y:{type:'logarithmic',grid:{color:'#2a2f3d'}},x:{grid:{display:false}}}}});
+
+new Chart(document.getElementById('chart-sources'),{type:'bar',data:{labels:noS7.map(id=>GROUPS[id].name),datasets:[{label:'LMFDB',data:noS7.map(id=>GROUPS[id].lmfdb),backgroundColor:'#4a9eff88',borderRadius:2},{label:'AIMS-7 final',data:noS7.map(id=>GROUPS[id].aims7),backgroundColor:noS7.map(id=>COLORS[id]+'aa'),borderRadius:2}]},options:{plugins:{legend:{labels:{font:{size:11}}}},scales:{y:{type:'logarithmic',grid:{color:'#2a2f3d'}},x:{grid:{display:false}}}}});
+
+new Chart(document.getElementById('chart-models'),{type:'bar',data:{labels:['All-groups (coeff)','Non-S7 (coeff)','Non-S7 (+inv)'],datasets:[{label:'Balanced Accuracy',data:[0.7726,0.81,0.8525],backgroundColor:['#7a6230','#4a9eff88','#c9a84c'],borderRadius:3}]},options:{plugins:{legend:{display:false}},scales:{y:{min:0.7,max:0.9,grid:{color:'#2a2f3d'}},x:{grid:{display:false}}}}});
+
+new Chart(document.getElementById('chart-prf'),{type:'bar',data:{labels:['A7','L(3,2)','C7xC3','D7','C7xC6','C7'],datasets:[{label:'Precision',data:[0.7729,0.7969,0.9995,0.8274,0.8802,0.9394],backgroundColor:'#4a9eff88',borderRadius:2},{label:'Recall',data:[0.8850,0.6374,0.9970,0.8925,0.7823,0.9208],backgroundColor:'#c9a84c88',borderRadius:2},{label:'F1-Score',data:[0.8252,0.7083,0.9983,0.8587,0.8284,0.9300],backgroundColor:'#4ecdc488',borderRadius:2}]},options:{plugins:{legend:{labels:{font:{size:10}}}},scales:{y:{min:0.5,max:1.05,grid:{color:'#2a2f3d'}},x:{ticks:{font:{size:9}},grid:{display:false}}}}});
+
+const cmLabels=['A7','L(3,2)','C7xC3','D7','C7xC6','C7'];
+const cmData=[[20178,2616,0,5,0,0],[5923,10447,1,19,1,0],[3,21,9754,3,0,2],[2,20,2,772,65,4],[2,2,0,131,485,0],[0,3,2,3,0,93]];
+const cmTable=document.getElementById('cm-table');
+let cmHTML='<thead><tr><th>True \\ Pred</th>'+cmLabels.map(l=>`<th>${l}</th>`).join('')+'</tr></thead><tbody>';
+cmData.forEach((row,i)=>{
+  cmHTML+=`<tr><th style="color:var(--text);text-align:left;padding:0.3rem 0.45rem">${cmLabels[i]}</th>`;
+  row.forEach((val,j)=>{
+    const cls=i===j?'cm-diag':(val>1000?'cm-high':'cm-off');
+    cmHTML+=`<td class="${cls}">${val>0?val.toLocaleString():'-'}</td>`;
   });
-
-  renderPanel(id);
-  if (window.MathJax) MathJax.typesetPromise([document.getElementById('info-panel')]);
-}
-
-function renderPanel(id) {
-  const g = GROUPS[id];
-  const badge = g.solvable
-    ? `<div class="solvable-badge">✓ SOLVABLE BY RADICALS</div>`
-    : `<div class="nonsolvable-badge">✗ NOT SOLVABLE BY RADICALS</div>`;
-
-  document.getElementById('info-panel').innerHTML = `
-    <div class="group-tag">${g.tag} · NODE ${id}</div>
-    <div class="info-name">${g.display}</div>
-    <div class="info-order">Order: ${g.order.toLocaleString()} &nbsp;|&nbsp; Index in $S_7$: ${(5040/g.order).toLocaleString()}</div>
-    <div class="info-desc">${g.desc}</div>
-    <table class="resolvent-table">
-      <caption>Resolvent Factorization Degrees</caption>
-      <thead><tr><th>Resolvent</th><th>Factor degrees</th></tr></thead>
-      <tbody>
-        <tr><td>$R_1(x)$ &nbsp;(quadratic)</td><td><span class="factor-pill">${g.r1}</span></td></tr>
-        <tr><td>$R_2(x)$ &nbsp;(30-ic)</td><td><span class="factor-pill">${g.r2}</span></td></tr>
-        <tr><td>$R_3(x)$ &nbsp;(120-ic)</td><td><span class="factor-pill">${g.r3}</span></td></tr>
-      </tbody>
-    </table>
-    <div class="example-poly-label">Database Count &amp; Example</div>
-    <div class="example-poly">${g.example}<br><span style="color:var(--muted);font-size:0.68rem">${g.exampleNote}</span><br><span style="color:var(--muted);font-size:0.68rem">Count: ${g.count}</span></div>
-    ${badge}
-  `;
-}
-
-// Build summary table
-const tbody = document.getElementById('summary-tbody');
-TABLE_DATA.forEach(id => {
-  const g = GROUPS[id];
-  const tr = document.createElement('tr');
-  tr.onclick = () => { selectNode(id); window.scrollTo({top:0,behavior:'smooth'}); };
-  tr.innerHTML = `
-    <td class="group-name">${g.display}</td>
-    <td class="order">${g.order.toLocaleString()}</td>
-    <td>${g.r1}</td>
-    <td>${g.r2}</td>
-    <td>${g.r3}</td>
-    <td style="color:${g.solvable?'#4ecdc4':'#e05c5c'}">${g.solvable ? 'Yes' : 'No'}</td>
-    <td>${g.count}</td>
-  `;
-  tbody.appendChild(tr);
+  cmHTML+='</tr>';
 });
+cmTable.innerHTML=cmHTML+'</tbody>';
 
-// Trigger MathJax on table
-window.addEventListener('load', () => {
-  if (window.MathJax) MathJax.typesetPromise();
-});
+new Chart(document.getElementById('chart-features'),{type:'bar',data:{labels:['Disc. sign','log|Delta|','j0','j1','j2','j3','j4','a0','a1','a2'],datasets:[{label:'Relative Importance',data:[0.18,0.16,0.14,0.12,0.10,0.09,0.08,0.06,0.04,0.03],backgroundColor:['#c9a84c','#c9a84c','#4ecdc4','#4ecdc4','#4ecdc4','#4ecdc4','#4ecdc4','#6e7280','#6e7280','#6e7280'],borderRadius:2}]},options:{indexAxis:'y',plugins:{legend:{display:false}},scales:{x:{grid:{color:'#2a2f3d'}},y:{ticks:{font:{size:10}},grid:{display:false}}}}});
+
+new Chart(document.getElementById('chart-cv'),{type:'line',data:{labels:['Fold 1','Fold 2','Fold 3','Fold 4','Fold 5'],datasets:[{label:'All-groups (coeff)',data:[0.7357,0.7625,0.7481,0.7563,0.7704],borderColor:'#7a6230',backgroundColor:'#7a623022',tension:0.4,fill:true,pointRadius:4},{label:'Non-S7 + invariants',data:[0.835,0.855,0.840,0.852,0.843],borderColor:'#c9a84c',backgroundColor:'#c9a84c22',tension:0.4,fill:true,pointRadius:4}]},options:{plugins:{legend:{labels:{font:{size:10}}}},scales:{y:{min:0.7,max:0.9,grid:{color:'#2a2f3d'}},x:{grid:{display:false}}}}});
+
+function selectNode(id){
+  document.querySelectorAll('.node-circle').forEach(c=>c.classList.remove('selected'));
+  document.querySelectorAll('.edge').forEach(e=>e.classList.remove('active'));
+  document.getElementById('nc-'+id).classList.add('selected');
+  const g=GROUPS[id];
+  g.connected.forEach(nid=>{const e=document.getElementById('e-'+Math.min(id,nid)+'-'+Math.max(id,nid));if(e)e.classList.add('active');});
+  const badge=g.solvable?'<div class="solvable-badge">&#10003; SOLVABLE BY RADICALS</div>':'<div class="nonsolvable-badge">&#10007; NOT SOLVABLE BY RADICALS</div>';
+  document.getElementById('info-panel').innerHTML=`<div class="group-tag">${g.tag}</div><div class="info-name">${g.name}</div><div class="info-order">Order: ${g.order.toLocaleString()} &nbsp;|&nbsp; AIMS-7: <span style="color:${COLORS[id]}">${g.aims7.toLocaleString()}</span></div><div class="info-desc">${g.desc}</div><table class="resolvent-table"><caption>Resolvent Factorization Degrees</caption><thead><tr><th>Resolvent</th><th>Factor degrees</th></tr></thead><tbody><tr><td>R1(x) quadratic</td><td><span class="factor-pill">${g.r1}</span></td></tr><tr><td>R2(x) 30-ic</td><td><span class="factor-pill">${g.r2}</span></td></tr><tr><td>R3(x) 120-ic</td><td><span class="factor-pill">${g.r3}</span></td></tr></tbody></table><div class="example-poly-label">Example Polynomial</div><div class="example-poly">${g.example}<br><span style="color:var(--muted);font-size:0.64rem">${g.exNote}</span></div>${badge}`;
+}
 </script>
 </body>
 </html>
